@@ -13,7 +13,7 @@ namespace ShopRespawn
         public override string ModuleName => "[SHOP] Respawn";
         public override string ModuleDescription => "";
         public override string ModuleAuthor => "E!N";
-        public override string ModuleVersion => "1.0.0";
+        public override string ModuleVersion => "v1.0.1";
 
         private IShopApi? SHOP_API;
         private const string CategoryName = "Respawn";
@@ -86,7 +86,7 @@ namespace ShopRespawn
             AddCommand("css_respawn", "", OnCmdRespawn);
         }
 
-        public void OnClientBuyItem(CCSPlayerController player, int itemId, string categoryName, string uniqueName, int buyPrice, int sellPrice, int duration, int count)
+        public HookResult OnClientBuyItem(CCSPlayerController player, int itemId, string categoryName, string uniqueName, int buyPrice, int sellPrice, int duration, int count)
         {
             if (TryGetRespawnCount(uniqueName, out int RespawnCount))
             {
@@ -97,9 +97,11 @@ namespace ShopRespawn
             {
                 Logger.LogError($"{uniqueName} has invalid or missing 'respawncount' in config!");
             }
+
+            return HookResult.Continue;
         }
 
-        public void OnClientToggleItem(CCSPlayerController player, int itemId, string uniqueName, int state)
+        public HookResult OnClientToggleItem(CCSPlayerController player, int itemId, string uniqueName, int state)
         {
             if (state == 1 && TryGetRespawnCount(uniqueName, out int RespawnCount))
             {
@@ -110,12 +112,16 @@ namespace ShopRespawn
             {
                 OnClientSellItem(player, itemId, uniqueName, 0);
             }
+
+            return HookResult.Continue;
         }
 
-        public void OnClientSellItem(CCSPlayerController player, int itemId, string uniqueName, int sellPrice)
+        public HookResult OnClientSellItem(CCSPlayerController player, int itemId, string uniqueName, int sellPrice)
         {
             playerRespawns[player.Slot].RespawnCount = 0;
             playerRespawns[player.Slot].ItemId = 0;
+
+            return HookResult.Continue;
         }
 
         private void OnCmdRespawn(CCSPlayerController? player, CommandInfo info)
